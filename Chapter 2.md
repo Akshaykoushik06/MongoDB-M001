@@ -93,4 +93,22 @@
 
 # Lecture: Find Command
 
--   Let's query the database from the CLI.
+-   Let's query the database through the CLI - by connecting to the cluster from the shell.
+-   Let's connect to the Atlas cluser using the command `mongo "mongodb+srv://m001-student:m001-mongodb-basics@sandbox.*****.mongodb.net/admin"`
+-   Notice that the database that I'm connecting to is called `admin`. If the database is not specified here, the default will be `test`.
+-   `admin` is the default database that does a number of administrative things one of which keeping track of existing users that have access to the database.
+-   Run the above command to connect to the database. Now that we are connected, it's time to start querying the data.
+-   First let's make sure that we are connected to the right cluster by listing the databases by using `show dbs`. This command will show the list of all databases in the cluster. You can see the additional `admin` database that is mentioned in the above point as well as the `local` database - which is another default database which takes care of administrative stuff. The rest are the ones imported from the sample databases. One of them is `sample_training` database.
+-   To use the `sample_training` database, use the following command `use sample_training`.
+-   To view the collections in this database, we issue `show collections` command.
+-   Assuming one of the collections name is `zips`, we can query that collection by using the following command `db.zips.find({"state": "NY"})`.
+-   We don't have to specify the database name since we already navigated to the needed database earlier. And the `db` object is now pointing to the `sample_training` database.
+-   The generic command would look like `db.<collection name>.find(<query>)`.
+-   By default, 20 documents would be displayed. If there are more and to show them, just type `it` in the prompt.
+-   `it` stands for `iterate`. This command allows us to iterate through the `cursor`.
+-   Cursor is an object that is returned by the `find` command.
+-   Formally, a `cursor` is a `pointer` to the result set of a query. And a pointer is a direct address of the memory location.
+-   To find the number of documents reurned by the `find` command, you can append `count` operation to the query. `db.zips.find({"state": "NY"}).count()`.
+-   `find` command shows busy-looking output on the prompt. If you want to look at it in a neat way, you can use `pretty` command to see it in a user-friendly format. For example, `db.zips.find({"state": "NY"}).pretty()`.
+-   Finally, if you issue a find command without a query, it will return first 20 documents in the **collection**. For example, `db.zips.find({})`. But the documents will not be in any particular order. So it can be _any_ 20 documents from the collection.
+-   These are the basics of querying a collection with mongo db
