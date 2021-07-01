@@ -1,0 +1,197 @@
+# Chapter 6: Next steps.
+
+## Lecture: Atlas Features - More Data Explorer
+
+-   We already learned in general terms that Atlas is a data platform and even used a built-in sample data set for this entire course.
+-   Let's see what else Atlas has to offer at this point of our MongoDB journey. Let's start with the Data Explorer, which we've seen a lot in this course.
+-   The Data Explorer has a number of tabs in it that we haven't used yet.
+-   The first one, after our familiar Find, is Indexes. You can use this tab to view what indexes our collection has.
+-   We can create a new index and drop an index if we want to.
+-   But most importantly, this is a performance advisor for your database.
+-   Here you can see
+    -   How often an index is used
+    -   When it was created
+    -   Who created it to get the best performance out of your Atlas cluster.
+-   The schema Anti-Pattern tab will provide you with sound advice about your data model once enough queries have been issued against the collection.
+-   The Aggregation tab allows us to build aggregation pipelines in the UI and see how data is transformed from one stage of the pipeline to another.
+-   Let's add in the stages that we've learned so far and see how that works.
+-   First, we match all documents that have Wi-Fi as one of their amenities. We entered the stage name, and this UI autocompletes suggestions of stages for us.
+-   Then there is a comment reminding of the syntax, saying the query in MQL. And the curly brackets are already here for us -- how convenient.
+-   All I have left to do is enter the field name amenities and the value Wi-Fi and voila, the section on the right is populated with the output after this match stage is applied.
+-   Let's add another stage.
+-   `$project` is another one that we learned. I'll go with the same example as before and keep only the price and address in the pipeline, getting rid of even the `_id` field value.
+-   And again, the right side of the UI shows how the data is now transformed in the pipeline.
+-   Note that if I reorder stages by drag and drop and put project before match, the match stage will return zero documents, because we eliminated the amenities field from the pipeline using project.
+-   This tool already showed us that the order matters when building an aggregation pipeline.
+-   Let's bring it all back and add another stage, `$group`.
+-   And again, there it is, our helpful syntax reminder. Looks like I don't even need to go to the Documentation page to remind myself of the syntax -- how great.
+-   I'll use the same accumulator as in earlier lessons to group documents by country, count how many listings each country has, and just for fun, add all the listing prices together per country.
+-   And here it is. I see the results. I can scroll all the way to the right to see all of them.
+-   But say at this point I just want to know how many countries are in the previous stage.
+-   That's no problem. We can have a stage for that too. Let's add `$count` and all it wants me to do is provide a field name for the `$count`.
+-   I'll call it `num_countries`. And suddenly I know that listings in nine countries offer Wi-Fi as one of their amenities in this data set.
+-   And that's not even the coolest part about it all. Say I'm now confident in my pipeline. And I want to add it to my application logic -- easy.
+-   By hitting `export` button, you can export the pipeline code to language and then select which language you're writing your application in.
+-   I'll select Java. On the left is the aggregation pipeline. On the right is the same pipeline but using Java. This I can just copy/paste into my code.
+-   To add some more useful information, I'll choose to include the import statements and driver syntax.
+-   And suddenly I have everything I need to implement this pipeline and any other aggregation pipeline in my application.
+-   Finally, there's a feature called Atlas Search, which is a fancier fine-grade indexing that enables advanced search functionality in your collection.
+-   This wraps up our Data Explorer journey.
+-   We looked at the Performance Advisor using the Indexes tab and the Aggregation Builder.
+-   We also learned that Atlas provides schema Anti-Pattern advisory and an advanced text search.
+
+## Lecture: Atlas Products and Options
+
+-   Let's see what else Atlas has in stock.
+-   In this lesson, we'll discuss user access options with Atlas, and two Atlas products, **Realm** and **Charts**.
+-   Let's start with Atlas.
+-   The first thing to know is how projects are structured within Atlas.
+-   When you first started with Atlas, you had to create something called an **Organization**.
+-   In Atlas, this is a way to group projects, teams, and billing at the highest level.
+-   If you are using a free tier cluster, there is no need to think about billing.
+-   But if you're using a different kind of cluster, the billing happens at the organization level, and you can find the information about it in the Billing tab.
+-   Within Atlas organizations, you can find Projects.
+-   Here I have three projects, each dedicated to a different course that I'm taking, or a different application that I'm working on.
+-   To make it easier to manage access within an organization, users can be grouped into teams, and granted access on project level by team, so that there isn't a need to add and shuffle access around on an individual user basis.
+-   Each project can have multiple Atlas clusters within it, as long as each cluster has a unique name.
+-   From this project view, I can access some other awesome Atlas features, like Realm and Charts.
+-   Let's talk **Realm**.
+-   Realm offers services that let developers build web or mobile applications, or just integrate MongoDB Atlas data into an application, all without worrying about managing or scaling servers.
+-   But they can still easily track the database side of things from Advanced Configuration view, once they have launched an application.
+-   Realm, just like all other MongoDB products, has a great documentation page that looks like this.
+-   I linked some resources for learning more about Realm, and app development with and without Realm, below this video.
+-   Now let's return back to our cluster, and see what Charts are all about.
+-   I personally think that **Charts** are fabulous.
+-   This tool allows us to create dynamic data visualizations, and use those visualizations wherever we like.
+-   In fact, in this course, we learned enough to create our own data visualization, so let's get started by hitting Add Dashboard.
+    I'll call mine "Airbnb," with the description saying, "prices heat map." A dashboard can have many charts in it.
+-   But for this example, we'll only create one.
+-   First I'm going to choose a data source, which will be the `sample_airbnb` database, with the `listingsAndReviews` collection as the actual source.
+-   I can pre-process the data by applying a query or an aggregation pipeline to the data first.
+-   I can also select Sample mode, so that only a sample of documents is going to be used in this chart.
+-   I'm not going to do either of those things right now, but you can certainly-- and should, if you want to-- check out this tool to its full potential.
+-   You may have noticed that when I chose a data source, the **Field** section on the left got populated with all the fields the documents in this collection have, which is super handy because I don't have to worry about spelling anymore.
+-   Next, I'll select a chart type, and as the description suggested, it will be a heat map. So I select Geospatial, and then Heat Map.
+-   The section below the chart type is helpfully telling me that I need some information about coordinates, since I'm using a map, and some information by which the intensity of the map will be visualized.
+-   For coordinates, I can use the location field in the address sub-document, and for intensity I'll be using the Price field.
+-   And I want the price on Max, meaning that the heat on this map will be determined by the max price as the hottest price.
+-   Here's our first chart. I'll title it "Airbnb Prices Heat Map." Right away, I see that something is going on in Turkey.
+-   Looks like the hottest Airbnb rental is in Istanbul. I happen to know that this is incorrect, and there is just a crazy price listed there, so I'll exclude it using the Query field.
+-   There, much better.
+-   We're only looking at prices that are less than $20,000 per listing.
+-   I can now zoom in on Turkey, for example, and find out which Istanbul neighborhoods are the most expensive.
+-   I can go back and zoom into listings in other countries, too.
+-   We can spend a lot more time exploring this chart, but I'll leave it to do it on your own time.
+-   If I click on three-dots button, I find that I can view the aggregation pipeline that was used to create this chart.
+-   And we already know about aggregation pipelines, so this should be easy enough to read.
+-   It looks like behind this visualization, there's a pretty simple aggregation pipeline.
+-   There are many other awesome Atlas tools and features that we are not going to cover in this course, but stay alert for more online content about MongoDB Atlas.
+-   For now, let's summarize what we learned.
+    -   In Atlas, billing happens at the organization level.
+    -   All projects can be viewed within an organization, and you can use Teams to bulk assign organization users to projects within the organization.
+    -   A cluster must have a unique name within a project.
+    -   We also learned about Realm and Charts.
+
+## Lecture: What is Mongo DB Compass?
+
+-   Mongo DB has a great UI tool called **Compass**.
+-   Let's learn about it.
+-   This [page](https://www.mongodb.com/products/compass) gives a general overview of what a compass is. It also provides a download link and a link to documentation, kind of like a one-stop-shop for compass things.
+-   Once you download, install and open compass, you'll see the tool.
+-   In the first page, you can provide the connection string to your data source, which in our case, is an Atlas Cluster. If you are connecting to a local deployment or something othet than an atlas cluster, click on `Fill in connection fields individually` and you can provide more detailed information about the deployment that you are looking to connect to.
+-   Here you see fields for the hostname, username & password info. But you can also provide other options such as the replica set name and the scurity protocol for your connection.
+-   Now let's go to our cluster and get that connection string for Compass.
+-   I hit connect and then the 3rd option is connecting to Compass. I choose my version of Compass and copy the connection string from Atlas to Compass. Notice that the password isn't filled in. So, I go ahead and add my password to connection string.
+-   Now, let's hit connect.
+-   The compass view is now populated with the databases that are present in our cluster, plus the admin, config and local databases.
+-   These three are automatically created and used for various database management purposes such as
+    -   User access information
+    -   Data about their application process
+    -   Other instance-specific data
+-   The rule of thumb is to never touch those databases, unless explicitly directed by support.
+-   For each database, we can see the size of it, as well as the number of collections and indexes that it contains.
+-   We can also expand each of the databases on the left sidebar to view the collections that they contain or we can select a database in this view to see a more detailed collection list for that particular database.
+-   A lot of useful numbers here for each collection. We have
+    -   The number of documents
+    -   Average document size
+    -   Total document size
+    -   Number of indexes
+    -   Total index size
+-   Already, we know quite a lot about our data in this database. Let's dig further. Click on a collection.
+-   This is a familiar view, something I've already seen in the Data Explorer in Atlas. However, I'm here to tell you that there are other features that you have not seen yet.
+-   Let's start from the top. We have the namespace that we're exploring and other numeric summaries about this collection.
+-   Then, we have the various tabs that we're going to now take a closer look at.
+-   First, the Documents tab. It provides us with the view of the documents in the collection and the ability to filter data. It also allows us to choose a view.
+-   We can see this formatted view of fields and values or we can view data in JSON format, or even in table format, if that is something that is more familiar to you at the moment.
+-   We can also expand the filter view to get a breakdown of the different options that we can use to query our data.
+-   For example, we can find the 20th smallest company from the ones founded in 2005 by filtering documents by year founded and excluding the ones where the number of employees is null.
+-   Then, project only the name and number of employees. After that, we can sort by the number of employees in increasing order, skip the first 19 and get our 10th smallest company.
+-   Now, if I want to add this query to my application, I can import it to language using the 3-dots menu -> Export to language.
+-   I pick a language, include import statements and driver syntax and I can start querying from my application if I want to.
+-   The aggregation tab in compass works just like the same tab does in the data explorer, which we looked at earlier.
+-   You can save your pipelines, import pipelines from text and export pipelines into a programming language of your choice.
+-   The next tab is called schema. It takes a sample of 1000 documents and analyzes their schema so that you can have a high-level overview of the shape of your documents.
+-   Here you can learn a bunch of interesting information about your collection.
+-   For example, if the `_id` field value has the type `ObjectId`, then it stores the information about when this document was created. In this case, all the documents from this sample of data were created on a Wednesday in January 2014.
+-   The next field is acquisition. At a high level, we see that most documents have the value `null` in the field. But approximately 14% in this sample are sub-documents.
+-   Clicking on that we find that they each have 9 nested fields. When I expand this field, I can see a breakdown for each of those fields in the sub-documents, which is awesome.
+-   This view shows me the types and range of values that are present in the collection. And if there are more nested data types like `acquiring_company` field, I can expand that as well and see the summary of values for this nested documents.
+-   There are more field and data types to explore but I hope that you will do that on your own.
+-   Lots of clicking and exploring is a great way to pass the time and learn something new.
+-   We're going to skip the **Explain Plan** tab for now and look at the **Indexes** tab.
+-   Currently, we only have one index which is the default index in Mongo DB.
+-   All documents are indexes by their `_id` value. As we learned earlier in the course, to increase query performance, we need more than just an `_id` index.
+-   Unless ofcourse we only query data by its `_id` value which almost never happens in reality.
+-   I like to query this data by the year the company was founded. So I'll add that index here.
+-   The UI prompts me to give this index a name which is handy because with a good name, I know exactly what this index does.
+-   I start typing the field name and suggestions immediately appear. So I don't have to worry about spelling or remembering much.
+-   Then I can choose the order of indexing to be ascending or descending and I'm done with creating a simple single-field index.
+-   There are other options here though. I can add another few, if I want a compound index and I can choose how this index will be built.
+-   To learn more about these options and indexes in general, take up Mongo DBs performance course.
+-   Now we can take a look at the **Explain Plan** tab.
+-   This tab is used to explain how the data that you are looking for was found and retrieved from the database. Let's see what that means.
+-   I'm going to look for all companies that were founded after the year 2010. Notice that if I add an extra curly bracket accidentally, or make some other mistake, the gray filter turns red. And when I click on it to find out what's wrong, it takes me to the relevant documentation.
+-   So far we've covered
+    -   Compass connection
+    -   The documents
+    -   Schema
+    -   Indexes tab
+-   Before we add an actual index to support this query, MongoDB has to scan the full collection to get this data.
+-   Now let's add an index and see how things change.
+-   This time around, Explain shows that it did an index scan and immediately got the documents that were requested without visiting any additional documents.
+-   You can get details about each stage of retrieving this data. And you can also view it in raw JSON as you would in the shell.
+-   If I add another criteria to this query, the index won't be as useful anymore. And the Explain tab will show why.
+-   Let's view all companies that were founded in the month of October in addition to being founded after 2010.
+-   Notice that I don't get an error here when using improper JSON and skipping the quotes around the field name.
+-   That's OK. MongoDB is here to help. And we'll assume that you meant to have quotes here.
+-   So let's explain again.
+-   This time, the index located and looked at 44 documents.
+-   But only 4 documents match the query.
+-   So we looked at extra 40 documents to get this result, which is not the most efficient way to find data and is a sign that this index isn't perfect for this query.
+-   This tab Compass helps understand and improve the performance of your queries, which is invaluable knowledge.
+-   Last but not least is the Validation tab.
+-   MongoDB is all about being flexible and supporting you in working with data, which includes giving you the tools to dictate what is allowed and what is not allowed to be written to your database.
+-   I can demand here that all documents that have the `field homepage_url` must have the value of the field be a string.
+-   Let's say I'm not a big fan of having to constantly clean up data from nulls.
+-   So I can choose to throw an error when the data type is incorrect.
+-   I can also set fields to be required or fit within a specific range, or establish even more complex rules.
+-   Last but not least, one more trip to the Schema tab, but with a different collection.
+-   This time, lets select the `sample_airbnb listingsAndReviews` collection.
+-   Hit Analyze **Schema**, and let's look at the Address field.
+-   Here we see our nine countries and the breakdown by frequency in this sample, then the country code that should match in frequency more or less, the government area, which is basically the neighborhood that the listing is in.
+-   But now, now is the cool part-- location.
+-   It's a map!!
+-   Since this data is given as coordinates, Compass recognizes that and immediately gives you the most helpful visualization of that data.
+-   You can even zoom in to see more details-- wow, so cool.
+-   All right, that's it for our Compass exploration.
+-   In this lesson, we looked closely at the Explain, Validation, and the Schema tab again.
+-   I hope that from here you continue this learning journey on your own or with the support of our docs and community.
+
+## Useful links
+
+-   [Mongo DB Developer Hub](https://developer.mongodb.com/)
+-   [Mongo DB Community Forums](https://developer.mongodb.com/community/forums/)
+-   [Case study: Bosch Leads Charge into IOT](https://www.mongodb.com/customers/bosch)
+-   [Case study: Forbes](https://www.mongodb.com/blog/post/forbes-cloud-migration-helps-worlds-biggest-media-brand-continue-standard-digital-innovation)
+-   [Case study: SEGA](https://www.mongodb.com/blog/post/sega-hardlight-migrates-to-mongodb-atlas-simplify-ops-improve-experience-mobile-gamers)
+-   [How the financial sector uses Mongo DB](https://www.mongodb.com/industries/financial-services)
