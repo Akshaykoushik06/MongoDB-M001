@@ -1,3 +1,5 @@
+# Chapter 4: Advanced CRUD operations.
+
 # Lecture: Query Operators - Comparison
 
 -   Its time to upgrade our MQL skills and add some complexity to our queries. Let's start by introducing comparison operators to our toolbox.
@@ -210,8 +212,8 @@
 
     -   ```
         {
-            ...
-            ...
+            . . .
+            . . .
 
             "start station location": {
                 "type" : "Point",
@@ -221,8 +223,8 @@
                 ]
             }
 
-            ...
-            ...
+            . . .
+            . . .
         }
         ```
 

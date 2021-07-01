@@ -1,0 +1,226 @@
+# Chapter 5: Indexing and aggregation pipeline.
+
+# Lecture: Aggregation framework
+
+-   What is the MongoDB aggregation framework? Why do we need it? How do we use it?
+-   This lesson will provide answers to some of these questions.
+-   The aggregation framework, in its simplest form, is just another way to query data in MongoDB.
+-   Everything we know how to do using the MongoDB query language can also be done using the aggregation framework.
+-   Here's an example.
+-   Let's find all documents that have Wi-Fi as one of the amenities, only include the price and address in the resulting cursor.
+-   With MQL, we will use this command:
+    -   `db.listingsAndReviews.find({"amenities": "Wifi"}, {"price": 1, "address": 1, "_id": 0})`
+-   Let's actually use it in the shell.
+-   First, let's switch to the database that we need. I'm already connected to the Atlas cluster. Here's the MQL query.
+-   We get the first 20 results. Fantastic.
+-   With the aggregation framework, we use this command:
+    -   `db.listingsAndReviews.aggregate([{ $match: { "amenities": "Wifi" } }, { $project: {"price": 1, "address": 1, "_id": 0} }])`
+-   Let's look at the syntax and see what's similar and what's different.
+-   To use the aggregation framework, we use `aggregate` instead of `find`.
+-   The reason for that is because sometimes we might want to aggregate, as in group or modify our data in some way, instead of always just filtering for the right documents.
+-   This means that you can perform operations other than finding and projecting data. But you can also calculate using aggregation.
+-   All right, so we used aggregate. Then we have the start square bracket, which makes me think of arrays.
+-   In arrays, the order of elements is important. And you often access elements by knowing their position in the array.
+-   The aggregation framework works as a pipeline, where the order of actions in the pipeline matters. And each action is executed in the order in which we list it.
+-   Meaning that we give our data to the pipeline on one end, then we describe how this pipeline is going to treat our data using aggregation stages. And then the transformed data emerges at the end of the pipeline. // This is similar to rxjs operators on the observable streams
+-   In this case, if our pipeline was to be represented as a literal set of connected pipes, we can think of it as having two separate filters.
+-   The first filter is the `$match` stage, which acts as a filter that keeps all the amenities without Wi-Fi from passing through to the next stage of the pipeline.
+-   The second filter is the `$project` stage that filters out all the fields that are not address or price from each document.
+-   So it must be an even finer filter than the first one.
+-   The rest of the syntax looks pretty similar. For each stage, we specify what we want to do. We want all documents that match the given criteria. And we want the following fields to be projected and the ID excluded.
+-   So what's the big deal? Why does MongoDB have the aggregation framework? And what is it good for?
+-   Excellent questions.
+-   Aggregation framework allows us to do incredible things with data.
+-   For example, you can build an equivalent of a complex pipeline strucure is, but with data. It's more of a chemical factory and less of a pipeline at this point.
+-   So let's talk about a stage which takes us beyond the capabilities of MQL, which will hopefully get you curious to explore more.
+-   Introducing the `$group` stage.
+-   The `$group` stage is one of the many stages that differentiates the aggregation framework from MQL.
+-   With MQL, we can filter and update data. With the aggregation framework, we can compute and reshape data.
+-   If the previous pipeline visualization used two filters, visualizing the `$group` stage looks something like this-- an operator that takes the incoming stream of data and siphons it into multiple distinct reservoirs.
+-   At this point, it is important to note that the nonfiltering stages in the aggregation framework are not modifying the original data when they do the summaries, calculations, and groupings of data.
+-   Instead, they work with the data that they get from the previous stage in the pipeline, which is in its own cursor.
+-   Let's look at a concrete example.
+-   We've been querying the Airbnb data set for a while. Let's find out which countries are listed in the sample set.
+-   First things first.
+-   We don't need the entire document to find an answer to this inquiry. We can use the "address" field to find the answer, and that's enough.
+-   This query gets one document from the collection and projects only the address value into the return cursor.
+    -   `db.listingsAndReviews.findOne({}, {"address": 1, "_id": 0})`
+-   Looks like if we group documents by the `address.country` field value, we should find out how many and which countries are used in this data set.
+-   But for that, we need to know the syntax of the `$group` stage.
+-   Let's look at the `$group` stage syntax to see how it works and how we can get a list of countries that are featured in our data set.
+-   The `$group` stage has this form:
+    -   `{ $group: { _id: <expression> // group by expression, <field1>: { <accumulator1> : <expression1> }, ... } }`
+-   As the `$group` stage receives documents from the previous stage, it uses the expression that we provide in the `_id` field to identify the group that this document belongs to.
+-   We're not going to use a complex expression. We're simply looking to group data by the `address.country` value. So we can state exactly that.
+    -   `db.listingsAndReviews.aggregate([ {$project: {"address": 1, "_id": 0}}, {$group: { _id: "$address.country" }} ])`
+-   Fantastic. It looks like we have nine countries in this set, and they span multiple continents.
+-   That's wonderful. It would also be cool to know how many listings each country has. With aggregation, that's easy to do.
+-   The second part of the `$group` syntax (line no.50) allows us to do more quantitative analysis across the data that's coming through the pipeline.
+-   Here, we're creating another field for the documents that are created in the pipeline, and we're calling this field "count".
+    -   `db.listingsAndReviews.aggregate([ {$project: {"address": 1, "_id": 0}}, {$group: {_id: "$address.country", "count": {"$sum": 1}}} ])`
+-   Then we're using the `$sum` operator, in which case the value of the "price" field in each document for a given group criteria will be added to the total value of the total for that group.
+-   In our case, we're simply adding the number one for each document that folds into each group.
+-   We now know which countries have listings in this data set and how many listings each country has.
+-   Can we do more complex and cool calculations? Absolutely.
+-   Developers have been known to create Conway's Game of Life and build fractals using the aggregation framework.
+-   So, sky's the limit.
+-   To learn more about the power of the aggregation framework, check out aggregation framework course.
+-   Let's summarize what we've learned.
+    -   The aggregation framework is a powerful tool that exceeds the filtering capabilities of MQL through its ability to compute, reshape, and reorganize data.
+    -   Data in the aggregation pipeline exists within the pipeline.
+    -   It does not inherently modify or change your original data.
+    -   Aggregation framework syntax is in the form of a pipeline, where stages are executed in the order in which they are listed.
+    -   The stage name is preceded with a dollar sign and followed by the required action descriptions, like `$sum` or a filter or some other type of modification.
+
+# Lecture: sort() and limit()
+
+-   In this lesson, we learned how to use these sort() and limit() methods.
+-   Sometimes, when you're creating a collection, you're not interested in all results, but are looking for the top 3 or top 10 results.
+-   In this lesson, we'll learn how to get the results in the order and quantity that we're looking for.
+-   Let's say we want to find the least populated zip code in the `Zips` collection.
+-   I'm already connected to my Atlas cluster, and I'm going to switch to it using the `sample_training` database.
+-   This query gets all the documents, sorts them by their population count in increasing order, and only returns the first document in the cursor, a.k.a. the one with the smallest population value.
+    -   `db.zips.find().sort({"pop":1}).limit(1)`
+-   This is weird. It looks like there can be a zip code-- or a postal code, if you're not from the US-- with zero people (cuz it's increasing order) living in it.
+-   Now I'm kind of curious how many of these zip codes we have in this collection with zero population.
+    -   `db.zips.find({"pop": 0}).count()`
+-   67. It looks like a lot. I certainly didn't expect a number this high.
+-   Maybe it makes more sense to look for the most populated zip code instead of the least populated one.
+-   For this, we reverse the direction of the sort and make it decreasing, so that the highest values are first in the cursor.
+    -   `db.zips.find().sort({"pop":-1}).limit(1)`
+-   This way, we see that the most populated zip code in this database is in Chicago.
+-   We can use the same approach to get the top 10 most populated zip codes.
+-   All we have to do is increase the limit of the cursor from 1 to 10, and now we see the top 10 zip codes by population.
+    -   `db.zips.find().sort({"pop":-1}).limit(10)`
+-   Now let's break down the syntax a little bit.
+-   `Sort()` and `limit()` are cursor methods.
+-   We already know other cursor methods, like `pretty()` and `count()`, so these two are an addition to our knowledge base.
+-   A cursor method is not applied to the data that is stored in the database. It is instead applied to the results set that lives in the cursor.
+-   After the cursor is populated with the filter data that's the result of the `find` command, we can then apply the `sort()` method, which will sort the data based on the criteria that we provided.
+-   You can sort the data by one or more fields in increasing or decreasing direction, like this.
+    -   `db.zips.find().sort({"pop": 1, "city": -1})`
+-   Here, the results that we get are sorted in **increasing order by population** and **decreasing order by the city name**.
+-   If you're looking for some specific number of results that best match your query, you can use `limit()`.
+-   The caveat with `limit()` is that if you use `limit()` without `sort()`, you will most likely get some results without any guarantee of its order.
+-   Similarly, if you use `limit()` before you `sort()`, you might miss some of the data that you meant to sort and include in the results set.
+-   Which is why MongoDB assumes that when you use `sort()` and `limit()`, you always mean to sort first, regardless of the order in which you type these.
+
+# Lecture: Introduction to Indexes
+
+-   In this lesson, we will learn about indexes.
+-   Now that we learned to query and modify data, it would be super helpful to know how to make these queries as efficient as possible.
+-   There are multiple ways in which we can improve our queries, but the most impactful way is through adding indexes to support your queries.
+-   So what is an index?
+-   An index in a database is, by its function, similar to an index in a book, where you have an alphabetical list of names and subjects with references to the places where they occur. And you can typically find an index at the end of the book.
+-   Say we have a book about 20th century Nobel prize winners in literature, and we are looking to find all mentions of Toni Morrison.
+-   You have 2 options on how to go about this search.
+    -   You can look through every page in the book carefully and find what you are looking for or
+    -   You can look through an alphabetically organized index, go to the M section, and find all the pages pertaining to Morrison.
+-   Which method is faster?
+-   Using the index is way faster. It cuts down on the search by the number of pages that the book has.
+-   Instead of looking through all of them, you just look at the index and immediately get the information that you need.
+-   An index in a collection serves the same purpose, but instead of always being alphabetical, an index and a collection is a special data structure that stores a small portion of the collections dataset in an easy-to-traverse form.
+-   Or, put simply, an index is a data structure that optimizes queries.
+-   You should build an index to support your queries.
+-   For example, if I'm running queries on these trips collection and find that I often query by the birth year, then I should have an index that supports these queries.
+    -   `db.trips.find({"birth year": 1989})`
+    -   `db.trips.find({"start station id": 476}).sort("birth year": 1)`
+-   The first query filters data by the value of the birth year field.
+-   The second sorts by the value of that field.
+-   Both could benefit from an index. So let's create one based on the birth year values.
+-   This command creates an index on the birth year field in increasing order.
+    -   `db.trips.createIndex({"birth year": 1})`
+-   Now that we have this index, when we issue this query `db.trips.find({"birth year": 1989})`, Mongo DB does not have to look at every document to get the needed results.
+-   It will just go directly to where the 1989 documents live and retrieve them.
+-   For this query `db.trips.find({"start station id": 476}).sort("birth year": 1)`, however mongo db will still have to look through all the documents to find those where the start station ID is 476.
+-   But the good news is that it can use the index that we created in order to retrieve those results in sorted order by birth year, so there won't be a need to sort the cursor after the data is filtered.
+-   This is quite awesome, because it massively improves the speed and overall performance of our queries, making them even faster and more efficient.
+-   The programmers among us know how memory and time-consuming sorting can be, especially for large amounts of data.
+-   So it's very important to use the right indexe for all queries that you sort.
+-   Now the question is whether we can make both queries that we are talking about more efficient using indexes.
+-   We certainly can.
+-   Our collection already has a single field index that we created before. We call that "single field", well , because it indexes documents using only one field.
+-   To make a second query more efficient, we need to use a compound index, which is an index on multiple fields.
+-   This index will first order dcuments by the `start station ID` value, then by the `birth year` value. It co-exists with the previous index in the same `trips` collection. But this index is much better suited for our second query.
+    -   `db.trips.createIndex({"start station id": 1, "birth year": 1})`
+-   It helps us immediately locate all start stations with ID 476, and thanks to our index, the documents there are already sorted by birth year.
+-   To learn more about indexes, improving your queries, and database performance, take Mongo DB performance course.
+-   In this lesson we just wanted to introduce the concept of indexes, how to create them and what they are for.
+-   But there is so much more to learn in that domain. Take Performance course to find out when you should and should not create indexes, how to build the best indexes for your queries, what are geospatial index, and what other type of indexes are at your disposal.
+
+# Lecture: Introduction to Data Modeling
+
+-   In this lesson, we'll discuss data modeling.
+-   MongoDB doesn't enforce how data is organized by default.
+-   So how can we decide what structure to use to store our data? Where should we create subdocuments? And where should we use arrays of values? At which point should the data get its own collection?
+-   Making these decisions about the shape and structure of your data is called **data modeling**.
+-   More specifically, data modeling is a way to organize fields in a document to support your application performance and querying capabilities.
+-   Today, I'll introduce data modeling for MongoDB.
+-   The most important rule of thumb in data modeling with MongoDB is that **data is stored in the way that it is used**.
+-   This notion determines the decision that you make about the shape of your document and the number of your collections.
+-   For example, say we're building an application that stores patient information.
+-   Each patient has a varied amount of information associated with them.
+-   One might have multiple phone numbers, prescriptions, and visit history but prefer to be contacted by email, or another might have zero prescriptions in their medical history and no patient visit records.
+-   Just from this, we can see how the document sizes will vary per patient-- that is, if we were to store all patient-pertaining information in one collection.
+-   We now have a general idea of what kind of data we're looking to store, such as contact info, visit history, prescriptions, age, gender, which is great but not enough to make any data modeling decisions just yet.
+-   The other important and probably the most important consideration is how this data will be queried.
+-   Who is using our application, and how?
+-   Let's consider that this application is being used by doctors in a network of medical facilities.
+-   It is most useful for the doctor to see the current prescriptions, diagnosis, and patient contact information when they pull up their record.
+-   Occasionally, depending on the patient, it would also be helpful to look up and cross-reference medication that the patient is taking for side effects, allergies, and other information.
+-   We can organize data in any way that we please.
+-   But if we want to optimize for fast and easy data retrieval, we can have a collection called patient records where we structure data as is most helpful for our application and another collection containing information about various medications.
+-   This way, when a doctor is looking for patient information to create a new prescription, contact them, or prepare for their next visit, all the relevant information is already in one collection and one document and therefore doesn't have to be gathered from across multiple sources, thus taking too long.
+-   Everything that is regularly queried together is stored together for fast retrieval.
+-   In this lesson, we learned that when data modeling with MongoDB, data that is accessed together should be stored together.
+-   It's also important to keep in mind that as your application is changing and evolving, your data model should also be evolving.
+-   And MongoDB is built for quick data model changes and evolution.
+-   To learn more about data modeling with MongoDB, take our Data Modeling course as your next venture into the land of MongoDB.
+
+# Lecture: Upsert - Update or Insert?
+
+-   Now that we learned some more complex ways to query data and a bit about structuring data, we can expand into mor complex ways to update data.
+-   Let's learn about upsert.
+-   First, it's importnt to know that everything we learned in MQL that's used to locate a document in a collection can also be used to mofify this document or documents.
+-   So the first part of this update operation is the query to locate the document in question.
+    -   `db.<collection name>.updateOne({<query to locate>}, {<update>})`
+-   One of the awesome features of MQL is the upsert option within the update commands.
+-   Upsert is a hybrid of update and insert and should only be used when needed.
+-   The syntax for upsert is to list it as third option right after your update directive.
+    -   `db.<collection name>.updateOne({<query to locate>}, {<update>}, {"upsert": true})`
+-   So let's talk about what upsert is and when should we use it.
+-   By default, upsert is set to `false`. But if you set it to true, you can expect it to either do an update or an insert.
+-   The update will happen if there documents that match the filter criteria of the update operation.
+-   The insert will happen if there are no documents that match this criteria. If this option didn't exist, you will have to search before inserting new documents in order to avoid duplicate records with inconsistencies between them, or not search and get documents with identical information.
+-   But this is not even the best scenario for which upsert is helpful.
+-   Let's look at upsert in action and see exactly how it works.
+-   Imagine we are running an IOT application that gathers data from various sources and accumulates in the database. Then this data is processed to communicate the status of things and other summaries on the accumulated data.
+-   One of my favourite examples is a smart home that is filled with sensors. As the owner of this smart home, I'm looking to figure out how to optimize my energy consumption and be more environmentally friendly. My data model might look something like this.
+-   I have a separate collection per sensor and separate document for 48 sensor readings. Each document contains the sensor ID, date, an array of data collected so far, and a couple of fields with summary information about the readings in the document so far.
+-   Every time there is a new sensor reading, what is the best way to add the information to the respective document - update or insert?
+-   I'll argue that update with upsert true is the best course of action. Here's why.
+-   Say we have a sensor reading coming in, let's call it `r` for reading.
+-   ```
+    sensor = 5,
+    value = 72,
+    date = Date('2021-05-11'),
+    time = "0010"
+    ```
+-   It contains the information about the sensor ID, the value that it's sensing today, and the time at which this reading is recorded which is at 10 mins past midnight.
+-   We need to update out existing document. But it's important to keep a few things in mind.
+-   We have to query for the sensor and date of the reading to match the document. We also have to ensure that there are no more than 48 readings in the readings array.
+-   Instead of finding the array size everytime, we can just keep the number of readings in a `valcount` field.
+-   The actual update portion of this command is pushing the new reading information about the value and time to the readings array.
+-   But now we have 3 readings in the array. So we increment the `valcount` by 1. Finally, I added a total field, which keeps track of the sum of all the values in the array.
+-   So with this field being present in the document, it also needs updating with each new reading.
+-   Here we're incrementing it by the reading value. And now it's time for the `upsert: true` option to be explicitly stated.
+-   If the `valcount` becomes greater than or equal to 48, the existing document will no longer match this query. This command will insert a new document.
+-   The ID value will be taken care of, because it is automatically generated on insert. The values in the rest of the fields like sensor, date, valcount and total will also be taken care of.
+-   `$inc` will create the fields and assign them values. And finally, the readings field will automatically be an array, because we are using the `$push` operator.
+-   This one command can both update and insert, depending on the results of the query search.
+-   Setting upsert to true is a great option. But you have to be mindful of the update that is happening and whether the update directive is enough to create the new document in the collection which will work with the rest of the documents in the collection.
+-   If you have a scenario where this is possible, then you have yourself a great usecase for upsert.
+-   To summarise:
+    -   Upsert is a good operation to use for conditional updates.
+    -   When you may want a new document insetad of an updated documents.
+    -   In all other cases, where you are just looking to make an update to an existing document or are looking to insert a brand new document, you should use the respective update with default `upsert: false` and insert commands.

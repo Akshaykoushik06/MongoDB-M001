@@ -1,3 +1,5 @@
+# Chapter 2: Importing, Exporting and Querying data.
+
 # Lecture: How does MongoDB store data?
 
 -   We already discussed that Mongo DB uses documents to store data. Now, let's look at the documents a bit closer.

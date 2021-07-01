@@ -1,3 +1,5 @@
+# Chapter 3: Creating and manipulating documents.
+
 # Lecture: Inserting New Documents - ObjectId
 
 -   We now know how to search existing documents. It would be great to also know how to add new documents to collections. Let's find out how to do just that.
