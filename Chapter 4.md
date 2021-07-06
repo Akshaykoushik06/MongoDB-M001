@@ -129,6 +129,9 @@
 -   To limit the result cursor by restricting their ray length, add the `$size` operator to your query, like so.
 -   This will only return documents that list exactly 20 amenities in this field and contain the amenities that we're looking for.
 -   You can also just query by array length using the size operator as your only query condition. But we do not need it in this scenario.
+-   The `$in` operator selects the documents where the value of a field equals any value in the specified array. To specify an `$in` expression, use the following prototype:
+    - `{ field: { $in: [<value1>, <value2>, ... <valueN> ] } }`
+- If the field holds an array, then the `$in` operator selects the documents whose field holds an array that contains **at least** one element that matches a value in the specified array (for example, <value1>, <value2>, and so on).
 -   Finally, I would like to make an informed choice about this journey. But the documents in this collection are just too big to quickly compare and choose my travel destination.
 -   For that, let's switch to the Mongo shell and learn about **projection**.
 -   As always, I'm already connected to the cluster. If you are not, make sure to be connected to it when you're following along with this lesson.
